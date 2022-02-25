@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 class AccountController extends Controller
 {
-    protected $accountService;
+    protected $accountservice;
     public function __construct(AccountService $accountService)
     {
         $this->accountservice = $accountService;
@@ -20,17 +20,18 @@ class AccountController extends Controller
             'first_name'=> 'required|string',
             'last_name'=> 'required|string',
             'email'=> 'required|string|email',
-            'phone'=>'required|numeric|max:11',
+            'phone'=>'required|numeric',
             'bvn'=> 'required|string',
             'maiden_name'=> 'required|string',
-            'deposit'=> 'required|numeric'
+            'deposit'=> 'required|numeric',
+            'address'=> 'required|string'
         ]);
 
         if($validator->fails()){
             return $this->sendBadRequestResponse(($validator->errors()));
         }
 
-        $open = $this->accountService->open((object)$request->only(['first_name', 'last_name', 'email','phone', 'bvn', 'maiden_name', 'desposit']));
+        $open = $this->accountservice->open((object)$request->only(['first_name', 'last_name', 'email','phone', 'bvn', 'maiden_name', 'deposit', 'address']));
 
         if($open->error){
             return $this->sendBadRequestResponse($open->message);
@@ -55,14 +56,31 @@ class AccountController extends Controller
         $req = $request->only(['account_no', 'amount', 'receiver_no']);
         $req['status'] = 'completed';
         
-        $transfer = $this->accountService->transfer((object)$req);
-
+        $transfer = $this->accountservice->transfer((object)$req);
         if($transfer->error){
             return $this->sendBadRequestResponse($transfer->message);
         }
 
-        return $$this->sendSuccessResponse($transfer->data, $transfer);
+        return $this->sendSuccessResponse($transfer->data, $transfer);
        
 
+    }
+
+    public function getBalance($account_no)
+    {
+        $account = $this->accountservice->accountDetails($account_no);
+        if($account->error){
+            return $this->sendBadRequestResponse($account->message);
+        }
+        return $this->sendSuccessResponse($account->data->balance, 'User Available balance');
+    }
+
+    public function transactions($account_no)
+    {
+        $history = $this->accountservice->transferLogs($account_no);
+        if($history->error){
+            return $this->sendBadRequestResponse($history->message);
+        }
+        return $this->sendSuccessResponse($history->data, 'Account Statements');
     }
 }

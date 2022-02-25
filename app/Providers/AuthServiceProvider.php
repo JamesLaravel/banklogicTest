@@ -34,7 +34,7 @@ class AuthServiceProvider extends ServiceProvider
         Passport::tokensExpireIn(Carbon::now()->addHours(2));
 
         Passport::tokensCan([
-            'admin-users'=> 'admin routes',
+            'employee-users'=> 'employee routes',
             'api' => 'normal users'
         ]);
     }

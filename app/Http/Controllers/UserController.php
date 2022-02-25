@@ -19,10 +19,10 @@ class UserController extends Controller
     public function createUser(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'role'=> 'required|string',
+            'role'=> 'required|string|in:employee,user',
             'bvn'=> 'required_if:role,user',
             'account_no'=> 'required_if:role,user',
-            'username'=> 'required|string',
+            'username'=> 'required|string|unique:users',
             'password'=> 'required|alpha_num|confirmed',           
         ]);
 
@@ -30,7 +30,7 @@ class UserController extends Controller
             return $this->sendBadRequestResponse($validator->errors());
         }
 
-        $newUser = $this->userService->add($request->only(['username', 'password', 'role', 'bvn', 'account_no']));
+        $newUser = $this->userService->add((object) $request->only(['username', 'password', 'role', 'bvn', 'account_no']));
 
         if($newUser->error){
             return $this->sendBadRequestResponse($newUser->message);
@@ -38,5 +38,25 @@ class UserController extends Controller
 
         return $this->sendSuccessResponse($newUser->data, $newUser->message);
         
+    }
+
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'username'=> 'required|string',
+            'password'=> 'required|string'
+        ]);
+
+        if($validator->fails()){
+            return $this->sendBadRequestResponse($validator->errors());
+        }
+
+        $access = $this->userService->login((object)$request->only('username', 'password'));
+        if($access->error){
+            return $this->sendBadRequestResponse($access->message);
+        }
+
+        return $this->sendSuccessResponse($access->data, $access->message);
+
     }
 }
