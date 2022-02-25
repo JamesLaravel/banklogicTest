@@ -20,12 +20,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::post('register', [UserController::class, 'createUser']);
-Route::post('login', [UserController::class, 'login']);
+Route::post('register', [UserController::class, 'createUser'])->name('user.register');
+Route::post('login', [UserController::class, 'login'])->name('user.login');
 
 Route::middleware('auth:employee-users', 'scope:employee-users')->group(function(){
-    Route::post('account/opening', [AccountController::class, 'openAccount']);
-    Route::post('account/transfer', [AccountController::class, 'makeTransfer']);
-    Route::get('account/balance/{account_no}', [AccountController::class, 'getBalance']);
-    Route::get('account/transaction/history/{account_no}', [AccountController::class, 'transactions']);
+    Route::post('account/opening', [AccountController::class, 'openAccount'])->name('account.opening');
+    Route::post('account/transfer', [AccountController::class, 'makeTransfer'])->name('transfer.fund');
+    Route::get('account/balance/{account_no}', [AccountController::class, 'getBalance'])->name('get.balance');
+    Route::get('account/transaction/history/{account_no}', [AccountController::class, 'transactions'])->name('transaction.history');
 });
